@@ -5,7 +5,7 @@ export default () => ({
     database: {
         type: env.DATABASE_TYPE,
         ssl: env.DATABASE_SSL === 'true',
-        host: env.POSTGRES_HOST,
+        host: env.DATABASE_HOST,
     },
     postgres: {
         port: parseInt(env.POSTGRES_PORT, 10) || 5432,
