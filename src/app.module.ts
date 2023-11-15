@@ -64,6 +64,13 @@ export class AppModule {
     static port: number;
 
     constructor(private readonly configService: ConfigService) {
+        console.log(configService.get<DatabaseType>('database.type'))
+        console.log(configService.get<string>(`database.host`))
+        console.log(configService.get<number>(`${configService.get<string>('database.type')}.port`))
+        console.log(configService.get<string>(`${configService.get<string>('database.type')}.username`))
+        console.log(configService.get<string>(`${configService.get<string>('database.type')}.password`))
+        console.log(configService.get<string>(`${configService.get<string>('database.type')}.database`))
+
         AppModule.port = this.configService.get<number>('port')
     }
 }
