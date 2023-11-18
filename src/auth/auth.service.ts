@@ -38,7 +38,7 @@ export class AuthService {
 
         const visitor = await this.visitorService.login(email, username);
 
-        // if (!user) throw new HttpException('El usuario no existe', 404);
+        if (!visitor) throw new HttpException('El visitante no existe', 404);
 
         const checkPassword = await compare(password, visitor.account.password);
 

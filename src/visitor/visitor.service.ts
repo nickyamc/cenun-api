@@ -31,7 +31,16 @@ export class VisitorService {
                         username
                     }
                 }
-            ]
+            ],
+            select: {
+                id: true,
+                account: {
+                    username: true,
+                    email: true,
+                    password: true
+                },
+                type: true,
+            }
         })
     }
 

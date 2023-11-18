@@ -14,11 +14,11 @@ export class AuthController {
     })
     @Post('login/user')
     loginUser(@Body() login: LoginAuthDto) {
-        return this.authService.sigInUser(login)
+        return this.authService.sigInUser(login);
     }
 
     @Post('login/visitor')
-    loginVisitor(@Body() auth: LoginAuthDto) {
-        console.log({})
+    loginVisitor(@Body() login: LoginAuthDto) {
+        return this.authService.sigInVisitor(login);
     }
 }

@@ -19,4 +19,10 @@ export class RelationsAttendanceDto {
 	@Type(() => Boolean)
 	@Transform(({ value }) => Boolean(value))
 	event?: boolean;
+
+	@IsOptional()
+	@IsBoolean()
+	@Type(() => Boolean)
+	@Transform(({ value }) => Boolean(value))
+	session?: boolean;
 }

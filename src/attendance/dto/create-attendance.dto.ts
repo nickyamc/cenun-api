@@ -31,4 +31,14 @@ export class CreateAttendanceDto {
 	@IsNumber()
 	@IsPositive()
 	eventId?: number;
+
+	@ApiProperty({
+		description: 'Session id',
+		required: true,
+		type: Number
+	})
+	@IsNotEmpty()
+	@IsNumber()
+	@IsPositive()
+	sessionId: number;
 }
