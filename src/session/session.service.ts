@@ -21,6 +21,13 @@ export class SessionService {
     async findOneById(id: number, relations: RelationsSessionDto): Promise<SessionEntity> {
         return await this.sessionRepository.findOne({
             where: {id},
+            relations,
+        })
+    }
+
+    async findOneByCheckCode(checkCode: string, relations: RelationsSessionDto): Promise<SessionEntity> {
+        return await this.sessionRepository.findOne({
+            where: {checkCode},
             relations: {
                 ...relations,
                 user: {
@@ -36,8 +43,8 @@ export class SessionService {
                 user: {
                     id: true,
                     account: {
-                      firstName: true,
-                      lastName: true,
+                        firstName: true,
+                        lastName: true,
                     },
                     lab: {
                         id: true,

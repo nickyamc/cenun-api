@@ -46,6 +46,16 @@ export class SessionController {
         return await this.sessionService.findOneById(identify.id, relations);
     }
 
+    @ApiRequestByIdAndRelations('session', ['user'])
+    //@Auth(Role.EMPLOYEE)
+    @Get('/qr-reader/:checkCode')
+    async findOneByCheckCode(
+        @Param('checkCode') checkCode: string,
+        @Query() relations: RelationsSessionDto,
+    ): Promise<SessionEntity> {
+        return await this.sessionService.findOneByCheckCode(checkCode, relations);
+    }
+
     @ApiRequestByBodyAndId('session', UpdateSessionDto, true)
     @Auth(Role.EMPLOYEE)
     @Patch(':id')

@@ -3,7 +3,7 @@ import {DateRecord} from 'src/entities/dateRecord.entity';
 import {User} from 'src/user/user.entity';
 import {
     Column,
-    Entity,
+    Entity, Generated,
     JoinColumn,
     ManyToOne,
     OneToMany,
@@ -21,6 +21,10 @@ export class SessionEntity {
         enum: SessionEntry,
     })
     entry: string;
+
+    @Column({name: 'check_code', unique: true})
+    @Generated('uuid')
+    checkCode: string;
 
     @Column(() => DateRecord, {prefix: false})
     dateRecord: DateRecord;
