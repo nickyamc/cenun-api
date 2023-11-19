@@ -8,6 +8,7 @@ import * as process from "process";
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     useContainer(app.select(AppModule), {fallbackOnErrors: true});
+    app.enableCors();
     app.useGlobalPipes(new ValidationPipe({transform: true}));
     app.setGlobalPrefix('api');
     const config = new DocumentBuilder()
