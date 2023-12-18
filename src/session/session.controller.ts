@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Param, Patch, Post, Query} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query} from '@nestjs/common';
 import {ApiBearerAuth, ApiTags} from "@nestjs/swagger";
 import {SessionService} from "./session.service";
 import {ApiBodyTemplate} from "../common/decorators/ApiBodyTemplate.decorator";
@@ -14,6 +14,8 @@ import {ApiRequestByBodyAndId} from "../common/decorators/ApiRequestByBodyAndId.
 import {UpdateSessionDto} from "./dto/update-session.dto";
 import {UpdateResult} from "typeorm";
 import {ApiParamById} from "../common/decorators/ApiParamById.decorator";
+import {GetRequestUser} from "../common/decorators/GetRequestUser.decorator";
+import {RequestUser} from "../common/intefaces/request-user";
 
 @ApiBearerAuth()
 @ApiTags('Session')
@@ -23,27 +25,43 @@ export class SessionController {
     }
 
     @ApiBodyTemplate('session', CreateSessionDto)
-    //@Auth(Role.EMPLOYEE)
+    @Auth(Role.EMPLOYEE)
     @Post()
-    async create(@Body() createSessionDto: CreateSessionDto): Promise<SessionEntity> {
-        return this.sessionService.create(createSessionDto);
+    async create(
+        @Body() createSessionDto: CreateSessionDto,
+        @GetRequestUser() requestUser: RequestUser,
+    ): Promise<SessionEntity> {
+        return this.sessionService.create(createSessionDto, requestUser);
     }
 
     @ApiQueriesByRelations('user')
     @Auth(Role.ADMIN)
     @Get()
-    async findAll(@Query() relations: RelationsSessionDto): Promise<SessionEntity[]> {
-        return await this.sessionService.findAll(relations);
+    async findAll(
+        @Query() relations: RelationsSessionDto,
+        @GetRequestUser() requestUser: RequestUser,
+    ): Promise<SessionEntity[]> {
+        return await this.sessionService.findAll(relations, requestUser);
     }
 
     @ApiRequestByIdAndRelations('session', ['user'])
-    //@Auth(Role.EMPLOYEE)
+    @Auth(Role.EMPLOYEE)
     @Get(':id')
     async findOneById(
         @Param() identify: IdentifySessionDto,
         @Query() relations: RelationsSessionDto,
     ): Promise<SessionEntity> {
         return await this.sessionService.findOneById(identify.id, relations);
+    }
+
+    @ApiParamById('user')
+    @Auth(Role.EMPLOYEE)
+    @Get('user/:userId')
+    async findOneByUserId(
+        @Param('userId', ParseIntPipe) userId: number,
+        @GetRequestUser() requestUser: RequestUser,
+    ): Promise<SessionEntity> {
+        return await this.sessionService.findOneByUserId(userId, requestUser);
     }
 
     @ApiRequestByIdAndRelations('session', ['user'])
@@ -64,6 +82,16 @@ export class SessionController {
         @Body() updateSessionDto: UpdateSessionDto,
     ): Promise<UpdateResult> {
         return await this.sessionService.update(identify.id, updateSessionDto);
+    }
+
+    @ApiParamById('session')
+    @Auth(Role.EMPLOYEE)
+    @Patch('close/:id')
+    async closeSession(
+        @Param() identify: IdentifySessionDto,
+        @GetRequestUser() requestUser: RequestUser,
+    ): Promise<UpdateResult> {
+        return await this.sessionService.closeSession(identify.id, requestUser);
     }
 
     @ApiParamById('session')

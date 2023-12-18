@@ -1,20 +1,39 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, NotAcceptableException, UnauthorizedException} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Attendance} from './attendance.entity';
 import {Between, In, Repository, UpdateResult} from 'typeorm';
 import {CreateAttendanceDto} from './dto/create-attendance.dto';
 import {RelationsAttendanceDto} from './dto/relations-attendance.dto';
 import {DatesAttendanceDto} from './dto/dates-attendance.dto';
+import {RequestUser} from "../common/intefaces/request-user";
+import {Role} from "../auth/enum/role.enum";
+import {UserService} from "../user/user.service";
+import {SessionService} from "../session/session.service";
 
 @Injectable()
 export class AttendanceService {
     constructor(
         @InjectRepository(Attendance)
         private attendanceRepository: Repository<Attendance>,
+        private userService: UserService,
+        private sessionService: SessionService,
     ) {
     }
 
-    async create(attendance: CreateAttendanceDto): Promise<Attendance> {
+    async create(
+        attendance: CreateAttendanceDto,
+        requestUser: RequestUser,
+    ): Promise<Attendance> {
+        if (requestUser.role === Role.EMPLOYEE) {
+            const user = await this.userService.findOneById(requestUser.id, {}, requestUser)
+            if (user.labId !== attendance.labId) throw new UnauthorizedException();
+        } else if (requestUser.role === Role.VISITOR){
+            if (requestUser.id !== attendance.visitorId) throw new UnauthorizedException();
+        } else {
+            throw new UnauthorizedException();
+        }
+        await this.verifyStatusSession(attendance.sessionId);
+        await this.notExistByVisitorIdAndLabIdOrFail(attendance.visitorId, attendance.labId);
         const createdAttendance: Attendance = this.attendanceRepository.create(attendance);
         return this.attendanceRepository.save(createdAttendance);
     }
@@ -110,6 +129,24 @@ export class AttendanceService {
                 startDate ? startDate : new Date('1900-01-01'),
                 endDate ? endDate : new Date(),
             ),
+        }
+    }
+
+    async notExistByVisitorIdAndLabIdOrFail(visitorId: number, labId: number) {
+        const sessions = await this.attendanceRepository.createQueryBuilder('attendance')
+            .where('DATE_TRUNC(\'day\', attendance.createdAt) = :today', {today: new Date().toISOString().split('T')[0]})
+            .andWhere('attendance.visitor_id = :visitorId', {visitorId})
+            .andWhere('attendance.lab_id = :labId', {labId})
+            .getCount();
+        if (sessions > 0) throw new NotAcceptableException();
+    }
+
+    async verifyStatusSession(sessionId: number) {
+        const session = await this.sessionService.findOneById(sessionId, {});
+        if (!session.status) throw new NotAcceptableException();
+        if (session.dateRecord.createdAt.getDate() !== new Date().getDate()) {
+            await this.sessionService.closeSession(sessionId);
+            throw new NotAcceptableException();
         }
     }
 }

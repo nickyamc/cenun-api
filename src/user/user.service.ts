@@ -35,7 +35,9 @@ export class UserService {
                 account: {
                     username: true,
                     email: true,
-                    password: true
+                    firstName: true,
+                    lastName: true,
+                    password: true,
                 },
                 role: true,
             }

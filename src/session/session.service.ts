@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {InjectRepository} from "@nestjs/typeorm";
 import {SessionEntity} from "./session.entity";
 import {In, Repository, UpdateResult} from "typeorm";
 import {CreateSessionDto} from "./dto/create-session.dto";
 import {RelationsSessionDto} from "./dto/relations-session.dto";
 import {UpdateSessionDto} from "./dto/update-session.dto";
+import {RequestUser} from "../common/intefaces/request-user";
+import {Role} from "../auth/enum/role.enum";
 
 @Injectable()
 export class SessionService {
@@ -13,15 +15,42 @@ export class SessionService {
     ) {
     }
 
-    async create(sessionDto: CreateSessionDto): Promise<SessionEntity> {
+    async create(
+        sessionDto: CreateSessionDto,
+        requestUser: RequestUser,
+    ): Promise<SessionEntity> {
+        if (requestUser.id !== sessionDto.userId) throw new UnauthorizedException();
         const createdSession: SessionEntity = this.sessionRepository.create(sessionDto);
         return this.sessionRepository.save(createdSession);
+    }
+
+    async notExistByUserIdOrFail(userId: number) {
+        const sessions = await this.sessionRepository.createQueryBuilder('session')
+            .where('DATE_TRUNC(\'day\', session.createdAt) = :today', {today: new Date().toISOString().split('T')[0]})
+            .andWhere('session.user_id = :userId', {userId})
+            .getCount();
+        if (sessions > 0) throw new Error();
     }
 
     async findOneById(id: number, relations: RelationsSessionDto): Promise<SessionEntity> {
         return await this.sessionRepository.findOne({
             where: {id},
             relations,
+        })
+    }
+
+    async findOneByUserId(userId: number, requestUser: RequestUser): Promise<SessionEntity> {
+        if (requestUser.role !== Role.ADMIN && requestUser.id !== userId) throw new UnauthorizedException();
+        return await this.sessionRepository.findOne({
+            where: {
+                userId,
+                status: true,
+            },
+            relations: {
+                user: {
+                    lab: true,
+                }
+            },
         })
     }
 
@@ -39,6 +68,7 @@ export class SessionService {
             select: {
                 id: true,
                 entry: true,
+                status: true,
                 userId: true,
                 user: {
                     id: true,
@@ -59,14 +89,25 @@ export class SessionService {
         })
     }
 
-    async findAll(relations: RelationsSessionDto): Promise<SessionEntity[]> {
+    async findAll(relations: RelationsSessionDto, requestUser: RequestUser): Promise<SessionEntity[]> {
         return await this.sessionRepository.find({
             relations,
+            where: requestUser.role === Role.ADMIN ? {} : {userId: requestUser.id},
         })
     }
 
     async update(id: number, sessionDto: UpdateSessionDto): Promise<UpdateResult> {
         return await this.sessionRepository.update({id}, sessionDto);
+    }
+
+    async closeSession(id: number, requestUser?: RequestUser): Promise<UpdateResult> {
+        if (requestUser) {
+            const {userId} = await this.findOneById(id, {})
+            if (requestUser.role !== Role.ADMIN && requestUser.id !== userId) throw new UnauthorizedException();
+        }
+        return await this.sessionRepository.update({id}, {
+            status: false,
+        });
     }
 
     async delete(id: number): Promise<UpdateResult> {

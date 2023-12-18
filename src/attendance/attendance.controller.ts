@@ -4,7 +4,7 @@ import {AttendanceService} from "./attendance.service";
 import {CreateAttendanceDto} from "./dto/create-attendance.dto";
 import {Attendance} from "./attendance.entity";
 import {RelationsAttendanceDto} from "./dto/relations-attendance.dto";
-import {DatesAttendanceDto} from "./dto/./dates-attendance.dto";
+import {DatesAttendanceDto} from "./dto/dates-attendance.dto";
 import {ApiBodyTemplate} from "../common/decorators/ApiBodyTemplate.decorator";
 import {ApiQueriesByRelations} from "../common/decorators/ApiQueriesByRelations.decorator";
 import {ApiParamById} from "../common/decorators/ApiParamById.decorator";
@@ -17,6 +17,8 @@ import {Role} from "../auth/enum/role.enum";
 import {IdentifyAttendanceDto} from "./dto/identify-attendance.dto";
 import {UpdateResult} from "typeorm";
 import {IdAttendanceDto} from "./dto/id-attendance.dto";
+import {GetRequestUser} from "../common/decorators/GetRequestUser.decorator";
+import {RequestUser} from "../common/intefaces/request-user";
 
 @ApiBearerAuth()
 @ApiTags('Attendance')
@@ -26,10 +28,13 @@ export class AttendanceController {
     }
 
     @ApiBodyTemplate('attendance', CreateAttendanceDto)
-    //@Auth(Role.EMPLOYEE, Role.VISITOR)
+    @Auth(Role.EMPLOYEE, Role.VISITOR)
     @Post()
-    async create(@Body() attendance: CreateAttendanceDto): Promise<Attendance> {
-        return await this.attendanceService.create(attendance);
+    async create(
+        @Body() attendance: CreateAttendanceDto,
+        @GetRequestUser() requestUser: RequestUser,
+    ): Promise<Attendance> {
+        return await this.attendanceService.create(attendance, requestUser);
     }
 
     @ApiQueriesByRelations('visitor', 'lab', 'event')

@@ -37,6 +37,8 @@ export class VisitorService {
                 account: {
                     username: true,
                     email: true,
+                    firstName: true,
+                    lastName: true,
                     password: true
                 },
                 type: true,

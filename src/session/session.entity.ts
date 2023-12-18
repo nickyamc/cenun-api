@@ -22,6 +22,9 @@ export class SessionEntity {
     })
     entry: string;
 
+    @Column({default: true, nullable: true})
+    status: boolean;
+
     @Column({name: 'check_code', unique: true})
     @Generated('uuid')
     checkCode: string;
