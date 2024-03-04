@@ -19,6 +19,6 @@ export class Account {
     @Column({name: 'last_name'})
     lastName: string;
 
-    @Column({length: 12})
+    @Column({length: 12, nullable: true})
     phone: string;
 }

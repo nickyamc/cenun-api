@@ -53,7 +53,12 @@ export class UserService {
     async findOneById(id: number, relations: RelationsUserDto, requestUser: RequestUser): Promise<User | null> {
         const user = await this.userRepository.findOne({
             where: {id},
-            relations,
+            relations: {
+                ...relations,
+                lab: {
+                    events: true
+                }
+            },
         });
         this.validateOwnership(id, requestUser);
         return user;

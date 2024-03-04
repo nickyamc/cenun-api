@@ -28,10 +28,20 @@ export class VisitorController {
     }
 
     @ApiQueriesByRelations('events', 'attendances')
-    @Auth(Role.ADMIN)
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Get()
     async findAll(@Query() relations: RelationsVisitorDto) {
         return await this.visitorService.findAll(relations);
+    }
+
+    @ApiQueriesByRelations('events', 'attendances')
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
+    @Get('username/:username')
+    async findAllByUsername(
+        @Param('username') username: string,
+        @Query() relations: RelationsVisitorDto
+    ) {
+        return await this.visitorService.findAllByUsername(username, relations);
     }
 
     @ApiRequestByIdAndRelations('visitor', ['events', 'attendances'])

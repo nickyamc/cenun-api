@@ -1,7 +1,7 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Visitor} from './visitor.entity';
-import {In, Repository, UpdateResult} from 'typeorm';
+import {In, Like, Repository, UpdateResult} from 'typeorm';
 import {CreateVisitorDto} from './dto/create-visitor.dto';
 import {UpdateVisitorDto} from './dto/update-visitor.dto';
 import {RelationsVisitorDto} from './dto/relations-visitor.dto';
@@ -71,6 +71,20 @@ export class VisitorService {
     ): Promise<Visitor | null> {
         return await this.visitorRepository.findOne({
             where: {id},
+            relations,
+        });
+    }
+
+    async findAllByUsername(
+        username: string,
+        relations: RelationsVisitorDto,
+    ): Promise<Visitor[]> {
+        return await this.visitorRepository.find({
+            where: {
+                account: {
+                    username: Like(`%${username}%`)
+                }
+            },
             relations,
         });
     }
