@@ -6,4 +6,9 @@ export class RelationsUserDto {
     @IsBoolean()
     @Transform(({value, key, obj}) => obj[key].toLowerCase().trim() === 'true')
     lab?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({value, key, obj}) => obj[key].toLowerCase().trim() === 'true')
+    sessions?: boolean;
 }

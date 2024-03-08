@@ -35,7 +35,7 @@ export class SessionController {
     }
 
     @ApiQueriesByRelations('user')
-    @Auth(Role.ADMIN)
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Get()
     async findAll(
         @Query() relations: RelationsSessionDto,
@@ -62,6 +62,16 @@ export class SessionController {
         @GetRequestUser() requestUser: RequestUser,
     ): Promise<SessionEntity> {
         return await this.sessionService.findOneByUserId(userId, requestUser);
+    }
+
+    @ApiParamById('user')
+    @Auth(Role.EMPLOYEE)
+    @Get('all/user/:userId')
+    async findAllByUserId(
+        @Param('userId', ParseIntPipe) userId: number,
+        @GetRequestUser() requestUser: RequestUser,
+    ): Promise<SessionEntity[]> {
+        return await this.sessionService.findAllByUserId(userId, requestUser);
     }
 
     @ApiRequestByIdAndRelations('session', ['user'])

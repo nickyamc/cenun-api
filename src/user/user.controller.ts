@@ -38,7 +38,7 @@ export class UserController {
         return this.userService.findAll(relations);
     }
 
-    @ApiRequestByIdAndRelations('user', ['lab'])
+    @ApiRequestByIdAndRelations('user', ['lab', 'sessions'])
     @Auth(Role.EMPLOYEE)
     @Get(':id')
     findOneById(

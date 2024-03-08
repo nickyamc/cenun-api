@@ -9,6 +9,7 @@ import {RequestUser} from "../common/intefaces/request-user";
 import {Role} from "../auth/enum/role.enum";
 import {UserService} from "../user/user.service";
 import {SessionService} from "../session/session.service";
+import { SessionEntry } from 'src/session/enums';
 
 @Injectable()
 export class AttendanceService {
@@ -144,9 +145,21 @@ export class AttendanceService {
     async verifyStatusSession(sessionId: number) {
         const session = await this.sessionService.findOneById(sessionId, {});
         if (!session.status) throw new NotAcceptableException();
-        if (session.dateRecord.createdAt.getDate() !== new Date().getDate()) {
+        const currentDate = new Date();
+        if (session.dateRecord.createdAt.getDate() !== currentDate.getDate()) {
             await this.sessionService.closeSession(sessionId);
             throw new NotAcceptableException();
+        } else {
+            let endTime = session.dateRecord.createdAt
+            endTime.setHours(session.dateRecord.createdAt.getHours() + 8)
+            if(session.entry == SessionEntry.MORNING && endTime.getHours() > 13) {
+                await this.sessionService.closeSession(sessionId);
+                throw new NotAcceptableException();
+            }
+            if(session.entry == SessionEntry.AFTERNOON && endTime.getHours() > 21) {
+                await this.sessionService.closeSession(sessionId);
+                throw new NotAcceptableException();
+            }
         }
     }
 }

@@ -21,7 +21,17 @@ export class SessionService {
     ): Promise<SessionEntity> {
         if (requestUser.id !== sessionDto.userId) throw new UnauthorizedException();
         const createdSession: SessionEntity = this.sessionRepository.create(sessionDto);
-        return this.sessionRepository.save(createdSession);
+        const saveSession = await this.sessionRepository.save(createdSession);
+        return await this.sessionRepository.findOne({
+            where: {
+                id: saveSession.id
+            },
+            relations: {
+                user: {
+                    lab: true
+                }
+            },
+        })
     }
 
     async notExistByUserIdOrFail(userId: number) {
@@ -45,6 +55,20 @@ export class SessionService {
             where: {
                 userId,
                 status: true,
+            },
+            relations: {
+                user: {
+                    lab: true,
+                }
+            },
+        })
+    }
+
+    async findAllByUserId(userId: number, requestUser: RequestUser): Promise<SessionEntity[]> {
+        if (requestUser.role !== Role.ADMIN && requestUser.id !== userId) throw new UnauthorizedException();
+        return await this.sessionRepository.find({
+            where: {
+                userId,
             },
             relations: {
                 user: {
@@ -91,7 +115,9 @@ export class SessionService {
 
     async findAll(relations: RelationsSessionDto, requestUser: RequestUser): Promise<SessionEntity[]> {
         return await this.sessionRepository.find({
-            relations,
+            relations: {
+                user: relations.user ? { lab: true } : false
+            },
             where: requestUser.role === Role.ADMIN ? {} : {userId: requestUser.id},
         })
     }

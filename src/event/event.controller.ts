@@ -30,7 +30,7 @@ export class EventController {
     }
 
     @ApiQueriesByRelations('labs', 'visitors', 'attendances')
-    @Auth(Role.ADMIN)
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Get()
     findAll(
         @Query() relations: RelationsEventDto,
@@ -39,7 +39,7 @@ export class EventController {
     }
 
     @ApiRequestByIdAndRelations('event', ['labs', 'visitors', 'attendances'])
-    @Auth(Role.ADMIN)
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Get(':id')
     findOneById(
         @Param() identify: IdentifyEventDto,
