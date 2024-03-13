@@ -21,7 +21,7 @@ export class VisitorController {
     }
 
     @ApiBodyTemplate('visitor', CreateVisitorDto)
-    //@Auth(Role.VISITOR, Role.EMPLOYEE)
+    @Auth(Role.VISITOR, Role.EMPLOYEE)
     @Post()
     async create(@Body() visitor: CreateVisitorDto) {
         return await this.visitorService.create(visitor);

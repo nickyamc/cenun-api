@@ -65,6 +65,10 @@ export class VisitorService {
         });
     }
 
+    async count(): Promise<number> {
+        return await this.visitorRepository.count()
+    }
+
     async findOneById(
         id: number,
         relations: RelationsVisitorDto,

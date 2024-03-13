@@ -9,6 +9,6 @@ import { IsEventExistConstraint } from './validation/is-event-exist.validation';
 	imports: [TypeOrmModule.forFeature([Evento])],
 	providers: [EventService, IsEventExistConstraint],
 	controllers: [EventController],
-	exports: [EventService]
+	exports: [EventService],
 })
 export class EventModule {}

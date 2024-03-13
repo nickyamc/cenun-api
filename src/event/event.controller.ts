@@ -23,7 +23,7 @@ export class EventController {
     }
 
     @ApiBodyTemplate('event', CreateEventDto)
-    //@Auth(Role.ADMIN)
+    @Auth(Role.ADMIN)
     @Post()
     create(@Body() event: CreateEventDto): Promise<Evento> {
         return this.eventService.create(event);

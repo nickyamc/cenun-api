@@ -39,13 +39,14 @@ export class AttendanceController {
 
     @ApiQueriesByRelations('visitor', 'lab', 'event')
     @ApiBody({type: DatesAttendanceDto})
-    //@Auth(Role.ADMIN)
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Post("all")
     async findAll(
         @Query() relations: RelationsAttendanceDto,
-        @Body() dates: DatesAttendanceDto
+        @Body() dates: DatesAttendanceDto,
+        @GetRequestUser() requestUser: RequestUser,
     ): Promise<Attendance[]> {
-        return await this.attendanceService.findALl(relations, dates);
+        return await this.attendanceService.findAll(relations, dates, requestUser);
     }
 
     @ApiRequestByIdAndRelations('visitor', ['visitor', 'lab', 'event'])
@@ -91,7 +92,7 @@ export class AttendanceController {
         description: 'Attendance id or check code'
     })
     @ApiQueriesByRelations('visitor', 'lab', 'event')
-    //@Auth(Role.EMPLOYEE, Role.VISITOR)
+    @Auth(Role.EMPLOYEE, Role.VISITOR)
     @Get(':identify')
     async findOneByIdOrCheckCode(
         @Param() identify: IdentifyAttendanceDto,
@@ -101,6 +102,7 @@ export class AttendanceController {
     }
 
     @ApiParamById('attendance')
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Delete(':id')
     async delete(@Param() identify: IdAttendanceDto): Promise<UpdateResult> {
         return await this.attendanceService.delete(Number(identify.id));

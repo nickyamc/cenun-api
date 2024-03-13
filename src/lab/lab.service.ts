@@ -70,4 +70,8 @@ export class LabService {
             throw new UnauthorizedException();
         }
     }
+
+    async count(): Promise<number> {
+        return await this.labRepository.count()
+    }
 }

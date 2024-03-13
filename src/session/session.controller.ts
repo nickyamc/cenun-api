@@ -25,7 +25,7 @@ export class SessionController {
     }
 
     @ApiBodyTemplate('session', CreateSessionDto)
-    @Auth(Role.EMPLOYEE)
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Post()
     async create(
         @Body() createSessionDto: CreateSessionDto,
@@ -75,7 +75,7 @@ export class SessionController {
     }
 
     @ApiRequestByIdAndRelations('session', ['user'])
-    //@Auth(Role.EMPLOYEE)
+    @Auth(Role.EMPLOYEE, Role.VISITOR)
     @Get('/qr-reader/:checkCode')
     async findOneByCheckCode(
         @Param('checkCode') checkCode: string,

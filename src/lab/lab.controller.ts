@@ -34,7 +34,7 @@ export class LabController {
     }
 
     @ApiBodyTemplate('lab', CreateLabDto)
-    // @Auth(Role.ADMIN)
+    @Auth(Role.ADMIN)
     @Post()
     async create(@Body() lab: CreateLabDto): Promise<Lab> {
         return await this.labService.create(lab);

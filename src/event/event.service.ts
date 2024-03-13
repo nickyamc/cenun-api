@@ -56,4 +56,8 @@ export class EventService {
     async delete(id: number): Promise<UpdateResult> {
         return await this.eventRepository.softDelete({id});
     }
+
+    async count(): Promise<number> {
+        return await this.eventRepository.count()
+    }
 }

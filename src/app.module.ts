@@ -19,6 +19,7 @@ import {cwd, env} from 'process';
 import {SessionModule} from './session/session.module';
 import {SessionEntity} from "./session/session.entity";
 import {DatabaseType} from "typeorm/driver/types/DatabaseType";
+import { ReportModule } from './report/report.module';
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import {DatabaseType} from "typeorm/driver/types/DatabaseType";
         AuthModule,
         AttendanceModule,
         SessionModule,
+        ReportModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -21,10 +21,10 @@ export class SessionService {
     ): Promise<SessionEntity> {
         if (requestUser.id !== sessionDto.userId) throw new UnauthorizedException();
         const createdSession: SessionEntity = this.sessionRepository.create(sessionDto);
-        const saveSession = await this.sessionRepository.save(createdSession);
+        const savedSession = await this.sessionRepository.save(createdSession);
         return await this.sessionRepository.findOne({
             where: {
-                id: saveSession.id
+                id: savedSession.id
             },
             relations: {
                 user: {

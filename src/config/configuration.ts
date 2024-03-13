@@ -21,5 +21,8 @@ export default () => ({
     },
     jwt: {
         secret: env.JWT_SECRET,
+    },
+    daa: {
+        token: env.DAA_TOKEN,
     }
 });

@@ -10,6 +10,8 @@ import {Role} from "../auth/enum/role.enum";
 import {UserService} from "../user/user.service";
 import {SessionService} from "../session/session.service";
 import { SessionEntry } from 'src/session/enums';
+import { LabService } from 'src/lab/lab.service';
+import { UserRole } from 'src/user/enums';
 
 @Injectable()
 export class AttendanceService {
@@ -18,6 +20,7 @@ export class AttendanceService {
         private attendanceRepository: Repository<Attendance>,
         private userService: UserService,
         private sessionService: SessionService,
+        private labService: LabService,
     ) {
     }
 
@@ -36,16 +39,44 @@ export class AttendanceService {
         await this.verifyStatusSession(attendance.sessionId);
         await this.notExistByVisitorIdAndLabIdOrFail(attendance.visitorId, attendance.labId);
         const createdAttendance: Attendance = this.attendanceRepository.create(attendance);
-        return this.attendanceRepository.save(createdAttendance);
+        const savedAttendance: Attendance = await this.attendanceRepository.save(createdAttendance);
+        return this.attendanceRepository.findOne({
+            where: {
+                id: savedAttendance.id
+            },
+            relations: {
+                event: true,
+                visitor: true,
+                lab: true,
+                session: true
+            }
+        })
     }
 
-    async findALl(relations: RelationsAttendanceDto, dates: DatesAttendanceDto): Promise<Attendance[]> {
-        return await this.attendanceRepository.find({
-            where: {
-                dateRecord: this.getDateRecord(dates),
-            },
-            relations,
-        })
+    async findAll(
+        relations: RelationsAttendanceDto, 
+        dates: DatesAttendanceDto,
+        requestUser: RequestUser
+    ): Promise<Attendance[]> {
+        if (requestUser.role === Role.EMPLOYEE) {
+            //const user = await this.userService.findOneById(requestUser.id, {}, requestUser)
+            return await this.attendanceRepository.find({
+                where: {
+                    session: {
+                        userId: requestUser.id
+                    },
+                    dateRecord: this.getDateRecord(dates),
+                },
+                relations,
+            })
+        } else {
+            return await this.attendanceRepository.find({
+                where: {
+                    dateRecord: this.getDateRecord(dates),
+                },
+                relations,
+            })
+        }
     }
 
     async findAllByVisitorId(
@@ -161,5 +192,13 @@ export class AttendanceService {
                 throw new NotAcceptableException();
             }
         }
+    }
+
+    async count(requestUser: RequestUser): Promise<number> {
+        return await this.attendanceRepository.count({
+            where: requestUser.role == Role.ADMIN ? {} : {
+                session: {userId: requestUser.id}
+            }
+        })
     }
 }

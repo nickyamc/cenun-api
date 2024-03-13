@@ -23,13 +23,13 @@ export class UserController {
     }
 
     @ApiBodyTemplate('user', CreateUserDto)
-    // @Auth(Role.ADMIN)
+    @Auth(Role.ADMIN)
     @Post()
     create(@Body() user: CreateUserDto) {
         return this.userService.create(user);
     }
 
-    @ApiQueriesByRelations('lab')
+    @ApiQueriesByRelations('lab', 'sessions')
     @Auth(Role.ADMIN)
     @Get()
     findAll(
@@ -61,7 +61,7 @@ export class UserController {
     }
 
     @ApiParamById('user')
-    @Auth(Role.EMPLOYEE)
+    @Auth(Role.ADMIN)
     @Delete(':id')
     delete(
         @Param() identify: IdentifyUserDto,
