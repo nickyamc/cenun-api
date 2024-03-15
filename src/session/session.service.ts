@@ -35,11 +35,37 @@ export class SessionService {
     }
 
     async notExistByUserIdOrFail(userId: number) {
-        const sessions = await this.sessionRepository.createQueryBuilder('session')
+        /*const sessions = await this.sessionRepository.createQueryBuilder('session')
             .where('DATE_TRUNC(\'day\', session.createdAt) = :today', {today: new Date().toISOString().split('T')[0]})
             .andWhere('session.user_id = :userId', {userId})
-            .getCount();
-        if (sessions > 0) throw new Error();
+            .getCount();*/
+        const dateAux = new Date()
+        const timeZoneAux = -(dateAux.getTimezoneOffset() / 60);
+        dateAux.setHours(dateAux.getHours() - (timeZoneAux + 5));
+
+        let sessions: SessionEntity[] = await this.sessionRepository.find({
+            where: {
+                userId
+            }
+        })
+        sessions = (sessions.map((session: SessionEntity) => {
+            const timeZone = -(session.dateRecord.createdAt.getTimezoneOffset() / 60);
+            const sessionCreatedAt = new Date(session.dateRecord.createdAt);
+            sessionCreatedAt.setHours(session.dateRecord.createdAt.getHours() - (timeZone + 5));
+            return {
+                ...session,
+                dateRecord: {
+                    ...session.dateRecord,
+                    createdAt: sessionCreatedAt
+                }
+            } as SessionEntity
+        })).filter((session) => {
+            return dateAux.getDate() === session.dateRecord.createdAt.getDate() && 
+                dateAux.getFullYear() === session.dateRecord.createdAt.getFullYear() && 
+                dateAux.getMonth() === session.dateRecord.createdAt.getMonth();
+        });
+
+        if (sessions.length > 0) throw new Error();
     }
 
     async findOneById(id: number, relations: RelationsSessionDto): Promise<SessionEntity> {

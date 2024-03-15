@@ -46,7 +46,17 @@ export class ReportService {
             labs.forEach((lab: Lab) => {
                 report.push({
                     lab: lab.suneduCode,
-                    count: attendances.filter((attendance) => attendance.labId === lab.id && attendance.dateRecord.createdAt.getDate() === date.getDate() && attendance.dateRecord.createdAt.getFullYear() === date.getFullYear() && attendance.dateRecord.createdAt.getMonth() === date.getMonth()).length,
+                    count: attendances.filter((attendance) => {
+                        const timeZone = -(attendance.dateRecord.createdAt.getTimezoneOffset() / 60);
+                        const dateAux = new Date(attendance.dateRecord.createdAt)
+                        dateAux.setHours(attendance.dateRecord.createdAt.getHours() - (timeZone + 5));
+                        if (attendance.labId === lab.id && 
+                            dateAux.getDate() === date.getDate() && 
+                            dateAux.getFullYear() === date.getFullYear() && 
+                            dateAux.getMonth() === date.getMonth()
+                        ) return true 
+                        else return false
+                    }).length,
                     date: date.getTime(),
                 })
             })

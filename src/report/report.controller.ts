@@ -37,7 +37,7 @@ export class ReportController {
     @Auth(Role.ADMIN, Role.EMPLOYEE)
     @Get('dashboard/number-events')
     async numberOfEvents(): Promise<number> {
-        return await this.reportservice.numberOfVisitors();
+        return await this.reportservice.numberOfEvents();
     }
 
     @Auth(Role.ADMIN, Role.EMPLOYEE)

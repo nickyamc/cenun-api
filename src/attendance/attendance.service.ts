@@ -37,7 +37,7 @@ export class AttendanceService {
             throw new UnauthorizedException();
         }
         await this.verifyStatusSession(attendance.sessionId);
-        await this.notExistByVisitorIdAndLabIdOrFail(attendance.visitorId, attendance.labId);
+        await this.notExistByVisitorIdAndSessionIdOrFail(attendance.visitorId, attendance.sessionId);
         const createdAttendance: Attendance = this.attendanceRepository.create(attendance);
         const savedAttendance: Attendance = await this.attendanceRepository.save(createdAttendance);
         return this.attendanceRepository.findOne({
@@ -173,21 +173,32 @@ export class AttendanceService {
         if (sessions > 0) throw new NotAcceptableException();
     }
 
+    async notExistByVisitorIdAndSessionIdOrFail(visitorId: number, sessionId: number) {
+        const attendance = await this.attendanceRepository.findOne({
+            where: {
+                visitorId,
+                sessionId
+            }
+        })
+        if(attendance) throw new NotAcceptableException();
+    }
+
     async verifyStatusSession(sessionId: number) {
         const session = await this.sessionService.findOneById(sessionId, {});
         if (!session.status) throw new NotAcceptableException();
         const currentDate = new Date();
+        const timeZone = -(currentDate.getTimezoneOffset() / 60);
+        session.dateRecord.createdAt.setHours(session.dateRecord.createdAt.getHours() - (timeZone + 5));
+        currentDate.setHours(currentDate.getHours() - (timeZone + 5));
         if (session.dateRecord.createdAt.getDate() !== currentDate.getDate()) {
             await this.sessionService.closeSession(sessionId);
             throw new NotAcceptableException();
         } else {
-            let endTime = session.dateRecord.createdAt
-            endTime.setHours(session.dateRecord.createdAt.getHours() + 8)
-            if(session.entry == SessionEntry.MORNING && endTime.getHours() > 13) {
+            if(session.entry == SessionEntry.MORNING && currentDate.getHours() >= 13) {
                 await this.sessionService.closeSession(sessionId);
                 throw new NotAcceptableException();
             }
-            if(session.entry == SessionEntry.AFTERNOON && endTime.getHours() > 21) {
+            if(session.entry == SessionEntry.AFTERNOON && currentDate.getHours() >= 21) {
                 await this.sessionService.closeSession(sessionId);
                 throw new NotAcceptableException();
             }
