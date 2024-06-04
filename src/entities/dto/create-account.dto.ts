@@ -5,6 +5,7 @@ import {
 	IsPhoneNumber,
 	IsNotEmpty,
 	Length, MaxLength, MinLength,
+	IsOptional,
 } from 'class-validator';
 import {IsDni} from "../decorator/is-dni.decorator";
 
@@ -66,7 +67,8 @@ export class CreateAccountDto {
 		minimum: 12,
 		maximum: 12,
 	})
-	@IsNotEmpty()
+	//@IsNotEmpty()
+	@IsOptional()
 	@IsPhoneNumber('PE')
 	phone: string;
 }

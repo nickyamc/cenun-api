@@ -1,7 +1,5 @@
-import {Controller, Get, Param} from '@nestjs/common';
+import {Controller, Get, Param, Res} from '@nestjs/common';
 import {AppService} from './app.service';
-import axios from "axios";
-import {response} from "express";
 import { ApiParam } from '@nestjs/swagger';
 
 @Controller()

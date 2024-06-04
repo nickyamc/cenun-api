@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, ParseIntPipe, Query, Res } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { ReportService } from "./report.service";
 import { RequestUser } from "src/common/intefaces/request-user";
@@ -52,6 +52,24 @@ export class ReportController {
         @GetRequestUser() requestUser: RequestUser
     ): Promise<number> {
         return await this.reportservice.numberOfAttendances(requestUser);
+    }
+
+    @Auth(Role.ADMIN, Role.EMPLOYEE)
+    @Get("pdf/attendances-by-user")
+    async pdfAttendancesByUser(
+        @Res() res,
+        @Query('month', ParseIntPipe) month: number, 
+        @GetRequestUser() requestUser: RequestUser
+    ): Promise<void> {
+        const buffer = await this.reportservice.pdfAttendancesByUser(month, requestUser);
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename=example.pdf',
+            'Content-Length': buffer.length,
+        })
+
+        res.end(buffer);
     }
 
 }

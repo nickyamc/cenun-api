@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from "axios";
+const PDFDocument = require('pdfkit-table');
 
 @Injectable()
 export class AppService {
